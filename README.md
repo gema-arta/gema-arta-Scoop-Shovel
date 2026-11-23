@@ -31,6 +31,31 @@
 
 Scoop is a command-line installer for Windows.
 
+## Scoop + Shovel
+
+This is upstream Scoop with the functionality of the [Shovel](https://github.com/Ash258/Scoop-Core)
+fork merged in as an additive overlay, so that **updates from upstream Scoop keep merging
+cleanly**. On top of everything Scoop does, this installation understands:
+
+- **YAML typed manifests** (`.yml`, `.yaml`) everywhere a `.json` manifest works - install,
+  update, search, cat, info, the sqlite cache, `checkver` and `autoupdate`. This makes buckets
+  such as [`Ash258/Shovel-Ash258`](https://github.com/Ash258/Shovel-Ash258) installable:
+  `scoop bucket add ash258 https://github.com/Ash258/Shovel-Ash258`
+- **Shovel manifest helpers**: `Test-Persistence`, `Assert-Administrator`,
+  `Assert-WindowsMinimalVersion`, `Assert-ScoopConfigValue`, `Remove-AppDirItem`, `Edit-File`,
+  `New-JavaShortcutWrapper`, `Write-UserMessage`, `Confirm-DirectoryExistence`,
+  `Invoke-ScoopCommand`, `Out-UTF8Content`, `Stop-ScoopExecution`
+- the **`pre_download`** manifest property
+- **`scoop utils <utility>`** - `checkver`, `checkhashes`, `checkurls`, `describe`, `format`,
+  `missing-checkver` and `auto-pr` without a `bin` folder in your bucket
+- **native tab completion** (`Import-Module "$(scoop prefix scoop)\supporting\completion\Scoop-Completion.psd1"`)
+  and clink completion for cmd
+- the **`shovel`** command as an alias of `scoop`
+
+See [`docs/SHOVEL-OVERLAY.md`](./docs/SHOVEL-OVERLAY.md) for the architecture, the complete list
+of integration points and how to merge upstream updates, and [`NOTICE.md`](./NOTICE.md) for
+licensing - the ported parts are GPL-3.0-only.
+
 ## What does Scoop do?
 
 Scoop installs apps from the command line with a minimal amount of friction. It:
