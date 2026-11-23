@@ -1,0 +1,130 @@
+{
+    "overlayVersion": "1.0.0",
+    "description": "Inventory of the Shovel compatibility overlay. Verified by bin/shovel-verify-overlay.ps1.",
+    "upstream": {
+        "repository": "https://github.com/ScoopInstaller/Scoop",
+        "branch": "master",
+        "mergedCommit": "e6aa3b366bdee8ed138c1e0f7b85192ebdd35d0f",
+        "mergedRelease": "v0.6.0"
+    },
+    "shovel": {
+        "repository": "https://github.com/Ash258/Scoop-Core",
+        "commit": "52fe1646d87ead40b642f112c3105c5aa54da3a5",
+        "license": "GPL-3.0-only",
+        "bucket": "https://github.com/Ash258/Shovel-Ash258"
+    },
+    "overlayFiles": [
+        "lib/shovel/Shovel-Overlay.ps1",
+        "lib/shovel/Shovel-Manifest.ps1",
+        "lib/shovel/Shovel-Helpers.ps1",
+        "lib/shovel/Shovel-ManifestHelpers.ps1",
+        "lib/shovel/Shovel-Hooks.ps1",
+        "libexec/scoop-utils.ps1",
+        "bin/shovel.ps1",
+        "supporting/yaml/bin/powershell-yaml.psd1",
+        "supporting/yaml/bin/powershell-yaml.psm1",
+        "supporting/completion/Scoop-Completion.psd1",
+        "supporting/completion/Scoop-Completion.psm1",
+        "supporting/completion/scoop.lua"
+    ],
+    "hookedFiles": [
+        {
+            "file": "libexec/scoop-install.ps1",
+            "markers": 1
+        },
+        {
+            "file": "libexec/scoop-list.ps1",
+            "markers": 1
+        },
+        {
+            "file": "libexec/scoop-search.ps1",
+            "markers": 5
+        },
+        {
+            "file": "libexec/scoop-update.ps1",
+            "markers": 3
+        },
+        {
+            "file": "lib/autoupdate.ps1",
+            "markers": 1
+        },
+        {
+            "file": "lib/buckets.ps1",
+            "markers": 3
+        },
+        {
+            "file": "lib/core.ps1",
+            "markers": 7
+        },
+        {
+            "file": "lib/database.ps1",
+            "markers": 3
+        },
+        {
+            "file": "lib/download.ps1",
+            "markers": 1
+        },
+        {
+            "file": "lib/install.ps1",
+            "markers": 2
+        },
+        {
+            "file": "lib/manifest.ps1",
+            "markers": 10
+        },
+        {
+            "file": "bin/auto-pr.ps1",
+            "markers": 2
+        },
+        {
+            "file": "bin/checkhashes.ps1",
+            "markers": 2
+        },
+        {
+            "file": "bin/checkurls.ps1",
+            "markers": 1
+        },
+        {
+            "file": "bin/checkver.ps1",
+            "markers": 1
+        },
+        {
+            "file": "bin/describe.ps1",
+            "markers": 1
+        },
+        {
+            "file": "bin/formatjson.ps1",
+            "markers": 2
+        },
+        {
+            "file": "bin/missing-checkver.ps1",
+            "markers": 1
+        }
+    ],
+    "requiredFunctions": [
+        "Get-ShovelOverlayVersion",
+        "ConvertFrom-Manifest",
+        "ConvertTo-Manifest",
+        "Get-ShovelManifestItem",
+        "Find-ShovelManifestPath",
+        "Get-ShovelManifestJsonText",
+        "Test-ShovelManifestExtension",
+        "Test-ShovelYamlExtension",
+        "Remove-ShovelManifestExtension",
+        "Copy-ShovelManifest",
+        "Save-ShovelManifestContent",
+        "Invoke-ShovelHookScript",
+        "Test-Persistence",
+        "Remove-AppDirItem",
+        "Edit-File",
+        "New-JavaShortcutWrapper",
+        "Assert-Administrator",
+        "Assert-WindowsMinimalVersion",
+        "Assert-ScoopConfigValue",
+        "Write-UserMessage",
+        "Confirm-DirectoryExistence",
+        "Out-UTF8Content",
+        "Stop-ScoopExecution",
+        "Invoke-ScoopCommand"
+    ]
+}
