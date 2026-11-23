@@ -1,0 +1,12 @@
+version: 7.2.1
+description: PowerShell Core
+homepage: https://github.com/PowerShell/PowerShell
+license: MIT
+url: https://github.com/PowerShell/PowerShell/releases/download/v7.2.1/PowerShell-7.2.1-win-x64.zip
+hash: 0ca131f3a78f404dc819a6336606caec0db1663a692ccc3af1e90232706ada54
+bin:
+- pwsh.exe
+checkver:
+  github: https://github.com/PowerShell/PowerShell
+autoupdate:
+  url: https://github.com/PowerShell/PowerShell/releases/download/v$version/PowerShell-$version-win-x64.zip

@@ -1,0 +1,5 @@
+version: 3.0.0
+description: Manifest available as both .json and .yml
+homepage: https://example.com
+license: Unlicense
+url: https://example.com/beta-yml.zip
