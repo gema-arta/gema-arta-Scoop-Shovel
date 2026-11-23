@@ -33,12 +33,11 @@ param(
 
 $Dir = Convert-Path $Dir
 
-Get-ChildItem $Dir -Filter "$App.json" -Recurse | ForEach-Object {
+Get-ShovelManifestItem -Path $Dir -Name $App | ForEach-Object { # shovel-overlay: manifest-extensions
     $file = $_.FullName
-    # beautify
-    $json = parse_json $file | ConvertToPrettyJson
-
-    # convert to 4 spaces
-    $json = $json -replace "`t", '    '
-    [System.IO.File]::WriteAllLines($file, $json)
+    # beautify; yaml typed manifests are rewritten as yaml
+    # shovel-overlay: yaml-manifests
+    $manifest = ConvertFrom-Manifest -Path $file
+    if ($null -eq $manifest) { return }
+    ConvertTo-Manifest -File $file -Manifest $manifest
 }

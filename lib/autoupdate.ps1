@@ -507,7 +507,7 @@ function Invoke-AutoUpdate {
         # 'Set-Content -Encoding ASCII' don't works in PowerShell 5
         # Wait for 'UTF8NoBOM' Encoding in PowerShell 7
         # $Manifest | ConvertToPrettyJson | Set-Content -Path (Join-Path $Path "$AppName.json") -Encoding UTF8NoBOM
-        [System.IO.File]::WriteAllLines($Path, (ConvertToPrettyJson $Manifest))
+        ConvertTo-Manifest -File $Path -Manifest $Manifest # shovel-overlay: yaml-manifests
         # notes
         $note = "`nUpdating note:"
         if ($Manifest.autoupdate.note) {

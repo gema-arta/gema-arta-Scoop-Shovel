@@ -50,7 +50,7 @@ function known_buckets {
 }
 
 function apps_in_bucket($dir) {
-    return (Get-ChildItem $dir -Filter '*.json' -Recurse).BaseName
+    return (Get-ShovelManifestItem -Path $dir).BaseName # shovel-overlay: manifest-extensions
 }
 
 function Get-LocalBucket {
@@ -113,7 +113,8 @@ function list_buckets {
             $bucket.Source = friendly_path $path
             $bucket.Updated = (Get-Item "$path\bucket" -ErrorAction SilentlyContinue).LastWriteTime
         }
-        $bucket.Manifests = Get-ChildItem -Path "$path\bucket" -Filter "*.json" -File -Force -Recurse -ErrorAction SilentlyContinue |
+        # shovel-overlay: manifest-extensions
+        $bucket.Manifests = Get-ShovelManifestItem -Path "$path\bucket" |
                 Measure-Object | Select-Object -ExpandProperty Count
         $buckets += [PSCustomObject]$bucket
     }
@@ -163,7 +164,7 @@ function add_bucket($name, $repo) {
     Write-Host 'OK.'
     if (get_config USE_SQLITE_CACHE) {
         info 'Updating cache...'
-        Set-ScoopDB -Path (Get-ChildItem (Find-BucketDirectory $name) -Filter '*.json' -Recurse).FullName
+        Set-ScoopDB -Path (Get-ShovelManifestItem -Path (Find-BucketDirectory $name)).FullName # shovel-overlay: manifest-extensions
     }
     success "The $name bucket was added successfully."
     return 0

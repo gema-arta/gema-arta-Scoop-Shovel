@@ -1,9 +1,12 @@
 function manifest_path($app, $bucket) {
-    (Get-ChildItem (Find-BucketDirectory $bucket) -Filter "$(sanitary_path $app).json" -Recurse).FullName
+    # shovel-overlay: manifest-extensions
+    Find-ShovelManifestPath -Directory (Find-BucketDirectory $bucket) -Name (sanitary_path $app)
 }
 
 function parse_json($path) {
     if ($null -eq $path -or !(Test-Path $path)) { return $null }
+    # shovel-overlay: yaml-manifests
+    if (Test-ShovelYamlExtension $path) { return ConvertFrom-Manifest -Path $path }
     try {
         Get-Content $path -Raw -Encoding UTF8 | ConvertFrom-Json -ErrorAction Stop
     } catch {
@@ -24,6 +27,8 @@ function url_manifest($url) {
         throw
     }
     if (!$str) { return $null }
+    # shovel-overlay: yaml-manifests
+    if (Test-ShovelYamlExtension $url) { return ConvertFrom-ShovelManifestString -Content $str -Extension 'yml' -Source $url }
     try {
         $str | ConvertFrom-Json -ErrorAction Stop
     } catch {
@@ -69,7 +74,7 @@ function Get-Manifest($app) {
                     $manifest = manifest $app $bucket
                     if (!$manifest) {
                         $deprecated_dir = (Find-BucketDirectory -Name $bucket -Root) + '\deprecated'
-                        $manifest = parse_json (Get-ChildItem $deprecated_dir -Filter "$(sanitary_path $app).json" -Recurse -ErrorAction Ignore).FullName
+                        $manifest = parse_json (Find-ShovelManifestPath -Directory $deprecated_dir -Name (sanitary_path $app)) # shovel-overlay: manifest-extensions
                     }
                 }
             }
@@ -86,7 +91,7 @@ function Get-Manifest($app) {
                         $app = appname_from_url $url
                         $manifest = parse_json $url
                     } else {
-                        if (($app -match '\\/') -or $app.EndsWith('.json')) { $url = $app }
+                        if (($app -match '\\/') -or (Test-ShovelManifestExtension $app)) { $url = $app } # shovel-overlay: manifest-extensions
                         $app = appname_from_url $app
                     }
                 }
@@ -125,9 +130,11 @@ function save_installed_manifest($app, $bucket, $dir, $url) {
         $wc = New-Object Net.Webclient
         $wc.Headers.Add('User-Agent', (Get-UserAgent))
         $data = $wc.DownloadData($url)
-        (Get-Encoding($wc)).GetString($data) | Out-UTF8File "$dir\scoop-manifest.json"
+        # shovel-overlay: yaml-manifests
+        Save-ShovelManifestContent -Content ((Get-Encoding($wc)).GetString($data)) -Source $url -Destination "$dir\scoop-manifest.json"
     } else {
-        Copy-Item (manifest_path $app $bucket) "$dir\scoop-manifest.json"
+        # shovel-overlay: yaml-manifests
+        Copy-ShovelManifest -Path (manifest_path $app $bucket) -Destination "$dir\scoop-manifest.json"
     }
 }
 
@@ -227,7 +234,11 @@ function Find-HistoricalManifestInGit($app, $bucket, $requestedVersion) {
         warn "Could not find inner bucket directory for '$bucket' at '$innerBucketDir'."
         return $null
     }
-    $relativeManifestPath = (Get-RelativePath $bucketDir (Join-Path $innerBucketDir "$app.json")) -replace '\\', '/'
+    # shovel-overlay: manifest-extensions
+    $manifestFilePath = Find-ShovelManifestPath -Directory $innerBucketDir -Name $app
+    $manifestFileName = if ($manifestFilePath) { Split-Path $manifestFilePath -Leaf } else { "$app.json" }
+    $manifestExtension = [System.IO.Path]::GetExtension($manifestFileName)
+    $relativeManifestPath = (Get-RelativePath $bucketDir (Join-Path $innerBucketDir $manifestFileName)) -replace '\\', '/'
 
     try {
         # HEAD fast-path: skip pickaxe if HEAD already has the requested version.
@@ -235,7 +246,7 @@ function Find-HistoricalManifestInGit($app, $bucket, $requestedVersion) {
         if ($headContent) {
             if ($headContent -is [Array]) { $headContent = $headContent -join "`n" }
             try {
-                $headObj = $headContent | ConvertFrom-Json -ErrorAction Stop
+                $headObj = ConvertFrom-ShovelManifestString -Content $headContent -Extension $manifestExtension -Source $relativeManifestPath -Quiet # shovel-overlay: yaml-manifests
                 if ($headObj -and $headObj.version -eq $requestedVersion) {
                     return @{ ManifestText = $headContent; version = $requestedVersion; source = "git_manifest:HEAD" }
                 }
@@ -264,7 +275,7 @@ function Find-HistoricalManifestInGit($app, $bucket, $requestedVersion) {
             if (-not $content) { continue }
             if ($content -is [Array]) { $content = $content -join "`n" }
             try {
-                $obj = $content | ConvertFrom-Json -ErrorAction Stop
+                $obj = ConvertFrom-ShovelManifestString -Content $content -Extension $manifestExtension -Source $relativeManifestPath -Quiet # shovel-overlay: yaml-manifests
             } catch { continue }
             if ($obj -and $obj.version -eq $requestedVersion) {
                 return @{ ManifestText = $content; version = $requestedVersion; source = "git_manifest:$spec" }

@@ -183,7 +183,7 @@ if ($SpecialSnowflakes) {
 
 hub diff --name-only | ForEach-Object {
     $manifest = $_
-    if (!$manifest.EndsWith('.json')) {
+    if (!(Test-ShovelManifestExtension $manifest)) { # shovel-overlay: manifest-extensions
         return
     }
 
@@ -201,8 +201,10 @@ hub diff --name-only | ForEach-Object {
 
         # detect if file was staged, because it's not when only LF or CRLF have changed
         $status = execute 'hub status --porcelain -uno'
-        $status = $status | Where-Object { $_ -match "M\s{2}.*$app.json" }
-        if ($status -and $status.StartsWith('M  ') -and $status.EndsWith("$app.json")) {
+        # shovel-overlay: manifest-extensions
+        $manifestLeaf = Split-Path $manifest -Leaf
+        $status = $status | Where-Object { $_ -match "M\s{2}.*$([regex]::Escape($manifestLeaf))" }
+        if ($status -and $status.StartsWith('M  ') -and $status.EndsWith($manifestLeaf)) {
             execute "hub commit -m '$commitMessage'"
         } else {
             Write-Host "Skipping $app because only LF/CRLF changes were detected ..." -ForegroundColor Yellow

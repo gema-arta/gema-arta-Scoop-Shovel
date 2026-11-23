@@ -3,6 +3,9 @@
 ## Meta downloader
 
 function Invoke-ScoopDownload ($app, $version, $manifest, $bucket, $architecture, $dir, $use_cache = $true, $check_hash = $true) {
+    # shovel-overlay: pre-download-hook
+    Invoke-ShovelHookScript -HookType 'pre_download' -Manifest $manifest -ProcessorArchitecture $architecture
+
     # we only want to show this warning once
     if (!$use_cache) { warn 'Cache is being ignored.' }
 

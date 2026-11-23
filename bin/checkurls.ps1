@@ -33,7 +33,7 @@ param(
 $Dir = Convert-Path $Dir
 $Queue = @()
 
-Get-ChildItem $Dir -Filter "$App.json" -Recurse | ForEach-Object {
+Get-ShovelManifestItem -Path $Dir -Name $App | ForEach-Object { # shovel-overlay: manifest-extensions
     $manifest = parse_json $_.FullName
     $Queue += , @($_.BaseName, $manifest)
 }

@@ -75,7 +75,7 @@ ensure_none_failed $apps
 
 if ($apps.length -eq 1) {
     $app, $null, $version = parse_app $apps
-    if ($app.EndsWith('.json')) {
+    if (Test-ShovelManifestExtension $app) { # shovel-overlay: manifest-extensions
         $app = [System.IO.Path]::GetFileNameWithoutExtension($app)
     }
     $curVersion = Select-CurrentVersion -AppName $app -Global:$global

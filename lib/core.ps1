@@ -577,7 +577,7 @@ function app_status($app, $global) {
 
     $deprecated_dir = (Find-BucketDirectory -Name $install_info.bucket -Root) + "\deprecated"
     if (Test-Path $deprecated_dir) {
-        $status.deprecated = (Get-ChildItem $deprecated_dir -Filter "$(sanitary_path $app).json" -Recurse).FullName
+        $status.deprecated = Find-ShovelManifestPath -Directory $deprecated_dir -Name (sanitary_path $app) # shovel-overlay: manifest-extensions
     }
 
     $manifest = manifest $app $install_info.bucket $install_info.url
@@ -611,7 +611,7 @@ function app_status($app, $global) {
 }
 
 function appname_from_url($url) {
-    (Split-Path $url -Leaf) -replace '.json$', ''
+    Remove-ShovelManifestExtension (Split-Path $url -Leaf) # shovel-overlay: manifest-extensions
 }
 
 # paths
@@ -1231,7 +1231,7 @@ function applist($apps, $global) {
 }
 
 function parse_app([string]$app) {
-    if ($app -match '^(?:(?<bucket>[a-zA-Z0-9-_.]+)/)?(?<app>.*\.json|[a-zA-Z0-9-_.]+)(?:@(?<version>.*))?$') {
+    if ($app -match '^(?:(?<bucket>[a-zA-Z0-9-_.]+)/)?(?<app>.*\.(?:json|yaml|yml)|[a-zA-Z0-9-_.]+)(?:@(?<version>.*))?$') { # shovel-overlay: manifest-extensions
         return $Matches['app'], $Matches['bucket'], $Matches['version']
     } else {
         return $app, $null, $null
@@ -1315,7 +1315,8 @@ function Out-UTF8File {
         [String] $FilePath,
         [Switch] $Append,
         [Switch] $NoNewLine,
-        [Parameter(ValueFromPipeline = $True)]
+        [Parameter(ValueFromPipeline = $True, Position = 1)] # shovel-overlay: utf8-positional-content
+        [Alias('Value', 'Content')]
         [PSObject] $InputObject
     )
     process {
@@ -1393,3 +1394,11 @@ $scoopPathEnvVar = switch (get_config USE_ISOLATED_PATH) {
 
 # OS information
 $WindowsBuild = [System.Environment]::OSVersion.Version.Build
+
+#region shovel-overlay: loader
+# Shovel compatibility overlay: YAML typed manifests, manifest helpers and 'scoop utils'.
+# Loading it here makes the overlay available to every command, bin/ script and
+# manifest script. Keep this block at the very end of this file.
+# Refer to docs/SHOVEL-OVERLAY.md before touching anything marked 'shovel-overlay'.
+. "$PSScriptRoot\shovel\Shovel-Overlay.ps1"
+#endregion shovel-overlay

@@ -192,14 +192,14 @@ function Set-ScoopDB {
     process {
         if ($Path.Count -eq 0) {
             $bucketPath = Get-LocalBucket | ForEach-Object { Find-BucketDirectory $_ }
-            $Path = (Get-ChildItem $bucketPath -Filter '*.json' -Recurse).FullName
+            $Path = (Get-ShovelManifestItem -Path $bucketPath).FullName # shovel-overlay: manifest-extensions
         }
         $Path | ForEach-Object {
-            $manifestRaw = [System.IO.File]::ReadAllText($_)
+            $manifestRaw = Get-ShovelManifestJsonText -Path $_ # shovel-overlay: yaml-manifests
             $manifest = ConvertFrom-Json $manifestRaw -ErrorAction SilentlyContinue
             if ($null -ne $manifest.version) {
                 $list.Add([pscustomobject]@{
-                        name        = $($_ -replace '.*[\\/]([^\\/]+)\.json$', '$1')
+                        name        = $(Remove-ShovelManifestExtension (Split-Path $_ -Leaf)) # shovel-overlay: manifest-extensions
                         description = if ($manifest.description) { $manifest.description } else { '' }
                         version     = $manifest.version
                         bucket      = $($_ -replace '.*buckets[\\/]([^\\/]+)(?:[\\/].*)', '$1')

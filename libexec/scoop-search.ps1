@@ -53,14 +53,14 @@ function bin_match_json($json, $query) {
 }
 
 function search_bucket($bucket, $query) {
-    $apps = Get-ChildItem (Find-BucketDirectory $bucket) -Filter '*.json' -Recurse
+    $apps = Get-ShovelManifestItem -Path (Find-BucketDirectory $bucket) # shovel-overlay: manifest-extensions
 
     $apps | ForEach-Object {
         $filepath = $_.FullName
         $name = $_.BaseName
 
         $content = try {
-            [System.IO.File]::ReadAllText($filepath)
+            Get-ShovelManifestJsonText -Path $filepath # shovel-overlay: yaml-manifests
         } catch {
             debug "Failed to read manifest file: $filepath (error: $_)"
             return
@@ -98,14 +98,14 @@ function search_bucket($bucket, $query) {
 
 # fallback function for PowerShell 5
 function search_bucket_legacy($bucket, $query) {
-    $apps = Get-ChildItem (Find-BucketDirectory $bucket) -Filter '*.json' -Recurse
+    $apps = Get-ShovelManifestItem -Path (Find-BucketDirectory $bucket) # shovel-overlay: manifest-extensions
 
     $apps | ForEach-Object {
         $filepath = $_.FullName
         $name = $_.BaseName
 
         $content = try {
-            [System.IO.File]::ReadAllText($filepath)
+            Get-ShovelManifestJsonText -Path $filepath # shovel-overlay: yaml-manifests
         } catch {
             debug "Failed to read manifest file: $filepath (error: $_)"
             return
@@ -148,7 +148,7 @@ function search_remote($bucket, $query) {
         $repo_name = $Matches[2]
         $api_link = "https://api.github.com/repos/$user/$repo_name/git/trees/HEAD?recursive=1"
         $result = download_json $api_link | Select-Object -ExpandProperty tree |
-            Where-Object -Value "^bucket/(.*$query.*)\.json$" -Property Path -Match |
+            Where-Object -Value "^bucket/(.*$query.*)\.(?:json|yaml|yml)$" -Property Path -Match | # shovel-overlay: manifest-extensions
             ForEach-Object { $Matches[1] }
     }
 

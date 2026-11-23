@@ -42,7 +42,7 @@ $apps | Where-Object { !$query -or ($_.name -match $query) } | ForEach-Object {
 
         $deprecated_dir = (Find-BucketDirectory -Name $install_info.bucket -Root) + '\deprecated'
         $is_deprecated = (Test-Path $deprecated_dir) -and
-        (Get-ChildItem $deprecated_dir -Filter "$(sanitary_path $app).json" -Recurse)
+        (Get-ShovelManifestItem -Path $deprecated_dir -Name (sanitary_path $app)) # shovel-overlay: manifest-extensions
 
         $info = @(
             if ($is_deprecated) { 'Deprecated package' }

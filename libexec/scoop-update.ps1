@@ -150,6 +150,8 @@ function Sync-Scoop {
     }
 
     shim "$currentdir\bin\scoop.ps1" $false
+    # shovel-overlay: shovel-alias
+    if (Test-Path "$currentdir\bin\shovel.ps1") { shim "$currentdir\bin\shovel.ps1" $false }
 }
 
 function Sync-Bucket {
@@ -203,7 +205,7 @@ function Sync-Bucket {
                 Invoke-Git -Path $bucketLoc -ArgumentList @('diff', '--name-status', $previousCommit) | ForEach-Object {
                     $status, $file = $_ -split '\s+', 2
                     $filePath = Join-Path $bucketLoc $file
-                    if ($filePath -match "^$([regex]::Escape($innerBucketLoc)).*\.json$") {
+                    if ($filePath -match "^$([regex]::Escape($innerBucketLoc)).*\.(?:json|yaml|yml)$") { # shovel-overlay: manifest-extensions
                         switch ($status) {
                             { $_ -in 'A', 'M', 'R' } {
                                 [void]($using:updatedFiles).Add($filePath)
@@ -234,7 +236,7 @@ function Sync-Bucket {
                 Invoke-Git -Path $bucketLoc -ArgumentList @('diff', '--name-status', $previousCommit) | ForEach-Object {
                     $status, $file = $_ -split '\s+', 2
                     $filePath = Join-Path $bucketLoc $file
-                    if ($filePath -match "^$([regex]::Escape($innerBucketLoc)).*\.json$") {
+                    if ($filePath -match "^$([regex]::Escape($innerBucketLoc)).*\.(?:json|yaml|yml)$") { # shovel-overlay: manifest-extensions
                         switch ($status) {
                             { $_ -in 'A', 'M', 'R' } {
                                 [void]($updatedFiles).Add($filePath)

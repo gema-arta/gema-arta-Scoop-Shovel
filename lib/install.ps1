@@ -31,7 +31,10 @@ function install_app($app, $architecture, $global, $suggested, $use_cache = $tru
     }
 
     if ((get_config SHOW_MANIFEST $false) -and ($MyInvocation.ScriptName -notlike '*scoop-update*')) {
-        Write-Host "Manifest: $app.json"
+        # shovel-overlay: manifest-extensions
+        $manifestFilePath = if ($bucket) { manifest_path $app $bucket } else { $null }
+        $manifestFileName = if ($manifestFilePath) { Split-Path $manifestFilePath -Leaf } else { "$app.json" }
+        Write-Host "Manifest: $manifestFileName"
         $style = get_config CAT_STYLE
         if ($style) {
             $manifest | ConvertToPrettyJson | bat --no-paging --style $style --language json
@@ -379,7 +382,7 @@ function prune_installed($apps, $global) {
 
 function ensure_none_failed($apps) {
     foreach ($app in $apps) {
-        $app = ($app -split '/|\\')[-1] -replace '\.json$', ''
+        $app = Remove-ShovelManifestExtension (($app -split '/|\\')[-1]) # shovel-overlay: manifest-extensions
         foreach ($global in $true, $false) {
             if ($global) {
                 $instArgs = @('--global')

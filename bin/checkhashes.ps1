@@ -59,7 +59,7 @@ function err ([String] $name, [String[]] $message) {
 }
 
 $MANIFESTS = @()
-foreach ($single in Get-ChildItem $Dir -Filter "$App.json" -Recurse) {
+foreach ($single in Get-ShovelManifestItem -Path $Dir -Name $App) { # shovel-overlay: manifest-extensions
     $name = $single.BaseName
     $file = $single.FullName
     $manifest = parse_json $file
@@ -183,8 +183,8 @@ foreach ($current in $MANIFESTS) {
 
         Write-Host "Writing updated $($current.app) manifest" -ForegroundColor DarkGreen
 
-        $current.manifest = $current.manifest | ConvertToPrettyJson
+        # shovel-overlay: yaml-manifests
         $path = Convert-Path $current.file
-        [System.IO.File]::WriteAllLines($path, $current.manifest)
+        ConvertTo-Manifest -File $path -Manifest $current.manifest
     }
 }
