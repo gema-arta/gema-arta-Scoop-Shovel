@@ -80,6 +80,20 @@ Three rules keep this mergeable:
 - The overlay only reads YAML through the vendored `powershell-yaml`; no other dependency is
   introduced.
 
+## How mergeable is it, in numbers
+
+| Merge | Conflicted files |
+| --- | --- |
+| `Ash258/Scoop-Core` (Shovel) into current Scoop - the naive approach | **90 of 143** |
+| `upstream/develop` (44 commits of real upstream work) into this overlay | **4** |
+
+The four were `lib/database.ps1`, `lib/install.ps1`, `lib/manifest.ps1` and
+`libexec/scoop-update.ps1`; no overlay file conflicted. Each was the documented case: upstream
+had rewritten the code next to a one-line hook. Note that `upstream/develop` also moves the
+update flow into a new `lib/update.ps1`, so the hooks currently living in
+`libexec/scoop-update.ps1` will have to be re-homed when that lands in a release - exactly the
+kind of drift `bin/shovel-upstream-merge.ps1 -DryRun` and the weekly workflow report.
+
 ## Updating from upstream Scoop
 
 ```powershell
