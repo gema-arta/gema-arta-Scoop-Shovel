@@ -1,0 +1,49 @@
+name: Shovel overlay
+
+on:
+  push:
+    branches:
+      - shovel
+      - main
+  pull_request:
+  schedule:
+    # Mondays, 04:17 UTC: report upstream changes which touch a hooked file
+    - cron: '17 4 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    name: Verify overlay integrity
+    runs-on: windows-latest
+    strategy:
+      matrix:
+        shell: [powershell, pwsh]
+    defaults:
+      run:
+        shell: ${{ matrix.shell }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Verify hooks, overlay files and functions
+        run: ./bin/shovel-verify-overlay.ps1
+
+  upstream:
+    name: Report upstream drift
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: pwsh
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+      - name: Dry run of the upstream merge
+        run: ./bin/shovel-upstream-merge.ps1 -DryRun
